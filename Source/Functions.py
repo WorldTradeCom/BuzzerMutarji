@@ -4,8 +4,11 @@ from dublib.TelebotUtils import TeleCache, TeleMaster, UserData
 from dublib.Methods.Filesystem import ReadTextFile
 from dublib.Engine.Bus import ExecutionStatus
 
-from telebot import TeleBot, types
+from os import PathLike
 from time import sleep
+
+from telebot import TeleBot, types
+import requests
 
 def AnswerToObscene(bot: TeleBot, user: UserData):
 	"""
@@ -46,7 +49,7 @@ def CheckBlacklist(message: str, bot: TeleBot, cacher: TeleCache, user: UserData
 	:rtype: ExecutionStatus
 	"""
 
-	Blacklist = ReadTextFile("Materials/Text/blacklist_strings.txt", split = True, strip = True)
+	Blacklist = ReadTextFile("Data/Materials/Text/blacklist_strings.txt", split = True, strip = True)
 	Status = ExecutionStatus()
 	Status.value = False
 	Status["sended"] = False
@@ -57,7 +60,7 @@ def CheckBlacklist(message: str, bot: TeleBot, cacher: TeleCache, user: UserData
 	if Status and autosend:
 		bot.send_animation(
 			chat_id = user.id,
-			animation = cacher.get_real_cached_file("Materials/Animation/bad.mp4", autoupload_type = types.InputMediaAnimation).file_id,
+			animation = cacher.get_real_cached_file("Data/Materials/Animation/bad.mp4", autoupload_type = types.InputMediaAnimation).file_id,
 			caption = "<b><i>" + "- Чел, ну реально! Не пазорься!" + "</i></b>",
 			parse_mode = "HTML",
 			reply_markup = InlineKeyboards.Delete("Был не прав, признаю!")
@@ -96,7 +99,7 @@ def CheckSubscription(master: TeleMaster, cacher: TeleCache, user: UserData, sub
 	if not Status and autosend:
 		master.bot.send_animation(
 			chat_id = user.id,
-			animation = cacher.get_real_cached_file("Materials/Animation/subscribe.mp4", autoupload_type = types.InputMediaAnimation).file_id,
+			animation = cacher.get_real_cached_file("Data/Materials/Animation/subscribe.mp4", autoupload_type = types.InputMediaAnimation).file_id,
 			caption = "\n".join(Caption),
 			parse_mode = "HTML",
 			reply_markup = InlineKeyboards.Subscribe(subscriptions)
@@ -104,6 +107,25 @@ def CheckSubscription(master: TeleMaster, cacher: TeleCache, user: UserData, sub
 		Status["sended"] = True
 		
 	return Status
+
+def DownloadFile(url: str, path: PathLike) -> bool:
+	"""
+	Скачивает файл по ссылке.
+
+	:param url: Ссылка на файл.
+	:type url: str
+	:param path: Путь к файлу.
+	:type path: PathLike
+	:return: Возвращает `True`, если файл успешно скачан.
+	:rtype: bool
+	"""
+
+	try:
+		Response = requests.get(url)
+		with open(path, "wb") as FileWriter: FileWriter.write(Response.content)
+		return True
+	
+	except: return False
 
 def SendModeSwitcher(bot: TeleBot, user: UserData):
 	"""
@@ -143,7 +165,7 @@ def SendShareMessage(bot: TeleBot, cacher: TeleCache, user: UserData):
 	
 	bot.send_photo(
 		chat_id = user.id,
-		photo = cacher.get_real_cached_file("Materials/Photo/share.jpg", autoupload_type = types.InputMediaPhoto).file_id,
+		photo = cacher.get_real_cached_file("Data/Materials/Photo/share.jpg", autoupload_type = types.InputMediaPhoto).file_id,
 		caption = "\n".join(Text),
 		parse_mode = "HTML",
 		reply_markup = InlineKeyboards.Share(Username)

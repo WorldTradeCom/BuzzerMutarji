@@ -1,5 +1,7 @@
 from Source.Core.Materials import MaterialsValidator
 from Source.UI.Keyboards import ReplyKeyboards
+from Source.Core.Speecher import Speecher
+from Source.TeleBotAdminPanel import Panel
 from Source.UI.CLI import COMMANDS
 from Source import Functions
 
@@ -8,6 +10,9 @@ from dublib.Methods.System import CheckPythonMinimalVersion, Clear
 from dublib.Methods.Filesystem import MakeRootDirectories
 from dublib.CLI.Terminalyzer import Terminalyzer
 from dublib.Engine.Configurator import Config
+
+import shutil
+import os
 
 from badwords import ProfanityFilter
 from telebot import types
@@ -19,7 +24,7 @@ import telebot
 
 Clear()
 CheckPythonMinimalVersion(3, 10)
-MakeRootDirectories(("Data/Users"))
+MakeRootDirectories("Data/Temp")
 
 Settings = Config("Settings.json")
 Settings.load()
@@ -31,6 +36,8 @@ Cacher.set_bot(Bot)
 Cacher.set_chat_id(Settings["cache_chat_id"])
 ProfanityFilterObject = ProfanityFilter()
 ProfanityFilterObject.init(["ru", "en"])
+AdminPanel = Panel(Bot, UsersManagerObject, Settings["password"])
+SpeecherObject = Speecher(Settings["vosk_model"])
 
 #==========================================================================================#
 # >>>>> ОБРАБОТКА АРГУМЕНТОВ ЗАПУСКА <<<<< #
@@ -57,6 +64,8 @@ if CommandData and CommandData.name:
 # >>>>> ОБРАБОТКА КОМАНД <<<<< #
 #==========================================================================================#
 
+AdminPanel.decorators.commands()
+
 @Bot.message_handler(commands = ["start"])
 def Command(Message: types.Message):
 	User = UsersManagerObject.auth(Message.from_user)
@@ -73,7 +82,7 @@ def Command(Message: types.Message):
 
 	Bot.send_animation(
 		chat_id = User.id,
-		animation = Cacher.get_real_cached_file("Materials/Animation/start.mp4", autoupload_type = types.InputMediaAnimation).file_id,
+		animation = Cacher.get_real_cached_file("Data/Materials/Animation/start.mp4", autoupload_type = types.InputMediaAnimation).file_id,
 		caption = "\n".join(Caption),
 		parse_mode = "HTML",
 		reply_markup = ReplyKeyboards.Menu()
@@ -86,6 +95,7 @@ def Command(Message: types.Message):
 @Bot.message_handler(content_types = ["text"])
 def Text(Message: types.Message):
 	User = UsersManagerObject.auth(Message.from_user)
+	if AdminPanel.procedures.text(Bot, UsersManagerObject, Message): return
 	Functions.CheckSubscription(Master, Cacher, User, Settings["subscriptions"])
 
 	#==========================================================================================#
@@ -112,6 +122,8 @@ def Text(Message: types.Message):
 # >>>>> ОБРАБОТКА INLINE-КНОПОК <<<<< #
 #==========================================================================================#
 
+AdminPanel.decorators.inline_keyboards()
+
 @Bot.callback_query_handler(func = lambda Callback: Callback.data == "after_subscribe")
 def InlineButton(Call: types.CallbackQuery):
 	User = UsersManagerObject.auth(Call.from_user)
@@ -121,7 +133,7 @@ def InlineButton(Call: types.CallbackQuery):
 
 	Bot.send_animation(
 		chat_id = User.id,
-		animation = Cacher.get_real_cached_file("Materials/Animation/after_subscribe.mp4", autoupload_type = types.InputMediaAnimation).file_id,
+		animation = Cacher.get_real_cached_file("Data/Materials/Animation/after_subscribe.mp4", autoupload_type = types.InputMediaAnimation).file_id,
 		caption = "<b><i>" + "- Ну все, удачки в пользовании!)" + "</i></b>",
 		parse_mode = "HTML"
 	)
@@ -135,5 +147,35 @@ def InlineButton(Call: types.CallbackQuery):
 	User = UsersManagerObject.auth(Call.from_user)
 	User.set_property("mode", Call.data[12:])
 	Master.safely_delete_messages(User.id, Call.message.id)
+
+#==========================================================================================#
+# >>>>> ОБРАБОТКА МЕДИА-ВЛОЖЕНИЙ <<<<< #
+#==========================================================================================#
+
+@Bot.message_handler(content_types = ["animation", "audio", "document", "photo", "video", "voice"])
+def File(Message: types.Message):
+	User = UsersManagerObject.auth(Message.from_user)
+	if AdminPanel.procedures.files(Bot, User, Message): return
+
+	if Message.voice:
+
+		try:
+			FileInfo = Bot.get_file(Message.voice.file_id)
+			FileURL = "https://api.telegram.org/file/bot" + Settings["bot_token"] + f"/{FileInfo.file_path}"
+			UserTempDirectory = f"Data/Temp/{User.id}"
+			if not os.path.exists(UserTempDirectory): os.makedirs(UserTempDirectory)
+			VoicePath = f"Data/Temp/{User.id}/{FileInfo.file_id}.ogg"
+			Functions.DownloadFile(FileURL, VoicePath)
+			if SpeecherObject.ogg_to_wav(VoicePath): VoicePath = VoicePath[:-4] + ".wav"
+
+			Bot.send_message(
+				chat_id = User.id,
+				text = SpeecherObject.recognize_speech(VoicePath) or "<i>Не удалось распознать текст.</i>",
+				parse_mode = "HTML",
+				reply_to_message_id = Message.id
+			)
+		except Exception as ExceptionData: print(ExceptionData)
+
+		if os.path.exists(UserTempDirectory): shutil.rmtree(UserTempDirectory)
 
 Bot.infinity_polling()

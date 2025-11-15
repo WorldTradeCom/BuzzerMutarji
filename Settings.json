@@ -1,5 +1,7 @@
 {
 	"bot_token": "",
 	"cache_chat_id": null,
-	"subscriptions": {}
+	"password": "1234",
+	"subscriptions": {},
+	"vosk_model": "vosk-model-small-ru-0.22"
 }

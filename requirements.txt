@@ -1,3 +1,7 @@
-git+https://github.com/FlacSy/badwords.git@v2.1.0
+-r Source/TeleBotAdminPanel/requirements.txt
+git+https://github.com/FlacSy/badwords
 pyTelegramBotAPI
+audioop-lts
 dublib==0.23.5
+pydub
+vosk

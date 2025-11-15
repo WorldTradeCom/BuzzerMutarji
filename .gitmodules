@@ -1,0 +1,3 @@
+[submodule "Source/TeleBotAdminPanel"]
+	path = Source/TeleBotAdminPanel
+	url = https://github.com/DUB1401/TeleBotAdminPanel
