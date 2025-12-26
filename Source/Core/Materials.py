@@ -50,6 +50,7 @@ class MaterialsValidator:
 		:rtype: bool
 		"""
 
+		if not os.path.exists(path): return False
 		File = Path(path)
 		IsFileFilled = None
 

@@ -25,9 +25,16 @@ import orjson
 # >>>>> ИНИЦИАЛИЗАЦИЯ СКРИПТА <<<<< #
 #==========================================================================================#
 
+Directories = (
+	"Data/Materials",
+	"Data/Materials/Animation",
+	"Data/Materials/Photo",
+	"Data/Materials/Text",
+)
+
 Clear()
 CheckPythonMinimalVersion(3, 10)
-MakeRootDirectories("Data/Temp")
+MakeRootDirectories(Directories)
 
 Settings = Config("Settings.json")
 Settings.load()
@@ -54,8 +61,13 @@ if CommandData and CommandData.name:
 
 	match CommandData.name:
 
-		case "materials": MaterialsValidator().print_materials()
-		case "validate": MaterialsValidator().validate()
+		case "materials": 
+			MaterialsValidator().print_materials()
+			Cased = True
+
+		case "validate": 
+			MaterialsValidator().validate()
+			Cased = True
 
 		case "translate":
 			Mode = TranslationModes.From if CommandData.check_key("from") else TranslationModes.To
@@ -71,7 +83,7 @@ if CommandData and CommandData.name:
 
 		case _: Cased = False
 
-	if Cased: exit()
+	if Cased: exit(0)
 
 #==========================================================================================#
 # >>>>> ИНИЦИАЛИЗАЦИЯ ОБЪЕКТОВ <<<<< #
