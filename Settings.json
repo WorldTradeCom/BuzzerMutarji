@@ -2,6 +2,13 @@
 	"bot_token": "",
 	"cache_chat_id": null,
 	"password": "1234",
+	"use_ffmpeg": false,
+	"neurohub": {
+		"port": 8000,
+		"source": "gemini",
+		"model": "gemini-2.5-flash",
+		"force_proxy": true
+	},
 	"subscriptions": {},
 	"vosk_model": "vosk-model-small-ru-0.22"
 }

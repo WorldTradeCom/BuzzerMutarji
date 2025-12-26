@@ -65,3 +65,16 @@ def Switcher(user: UserData) -> types.InlineKeyboardMarkup:
 	Menu.add(types.InlineKeyboardButton(text = Statuses[1] + "С нормального на зумерский", callback_data = "switch_mode_to"))
 
 	return Menu
+
+def Translate() -> types.InlineKeyboardMarkup:
+	"""
+	Строит Inline-интерфейс: кнопка перевода расшифрованного из аудио текста.
+	
+	:param user: Данные пользователя.
+	:type user: UserData
+	"""
+
+	Menu = types.InlineKeyboardMarkup(row_width = 1)
+	Menu.add(types.InlineKeyboardButton(text = "🈯 Перевести", callback_data = "translate"))
+
+	return Menu

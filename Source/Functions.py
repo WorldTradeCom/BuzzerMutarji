@@ -1,3 +1,4 @@
+from Source.Core.Translator import TranslationModes, Translator
 from Source.UI.Keyboards import InlineKeyboards
 
 from dublib.TelebotUtils import TeleCache, TeleMaster, UserData
@@ -169,4 +170,22 @@ def SendShareMessage(bot: TeleBot, cacher: TeleCache, user: UserData):
 		caption = "\n".join(Text),
 		parse_mode = "HTML",
 		reply_markup = InlineKeyboards.Share(Username)
+	)
+
+def TranslateText(bot: TeleBot, user: UserData, translator: "Translator", text: str):
+	"""
+	Обрабатывает перевод текста.
+
+	:param bot: Бот Telegram.
+	:type bot: TeleBot
+	:param user: Данные пользователя.
+	:type user: UserData
+	:param text: Текст для перевода.
+	:type text: str
+	"""
+
+	Result = translator.translate(mode = TranslationModes(user.get_property("mode")), text = text)
+	bot.send_message(
+		chat_id = user.id,
+		text = Result.value if Result else "Ууупс… Не удалось выполнить перевод."
 	)

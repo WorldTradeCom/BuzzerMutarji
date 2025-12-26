@@ -4,6 +4,7 @@ from dublib.CLI.TextStyler import FastStyler
 from dublib.Methods.Data import Zerotify
 
 from os import PathLike
+import subprocess
 import zipfile
 import shutil
 import wave
@@ -19,6 +20,25 @@ class Speecher:
 	#==========================================================================================#
 	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
+
+	def __IsFFmpegInstalled(self) -> bool:
+		"""
+		Проверяет, установлен и доступен ли **ffmpeg**.
+
+		:return: Возвращает `True`, если **ffmpeg** доступен.
+		:rtype: bool
+		"""
+
+		try: 
+			subprocess.run(
+				("ffmpeg", "-version"),
+				stdout = subprocess.PIPE,
+				stderr = subprocess.PIPE,
+				check = True
+			)
+			return True
+		
+		except FileNotFoundError: return False
 
 	def __CheckModel(self, model: str) -> bool:
 		"""
@@ -55,16 +75,20 @@ class Speecher:
 	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, model: str):
+	def __init__(self, model: str, use_ffmpeg: bool = False):
 		"""
 		Преобразователь голоса в речь.
 
 		:param model: Название каталога с используемой моделью **VOSK**.
 		:type model: PathLike
+		:param use_ffmpeg: Указывает, нужно ли использовать **ffmpeg** для преобразования **\*.ogg** в **\*.wav**.
+		:type use_ffmpeg: bool
 		"""
 
 		if not self.__CheckModel(model): self.__InstallModel(model)
+
 		self.__Model = Model(f"Data/VOSK/{model}")
+		self.__UseFfmpeg = use_ffmpeg
 
 	def ogg_to_wav(self, path: PathLike) -> bool:
 		"""
@@ -76,17 +100,33 @@ class Speecher:
 		:rtype: bool
 		"""
 
-		try:
-			Audio = AudioSegment.from_file(path, format = "ogg")
-			Audio = Audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
-			Audio.export(path[:-4] + ".wav", format = "wav")
-			os.remove(path)
+		if self.__UseFfmpeg and self.__IsFFmpegInstalled():
+			Command = (
+				"ffmpeg",
+				"-i", path,
+				"-ar", "16000",
+				"-ac", "1",
+				"-c:a", "pcm_s16le",
+				"-filter:a", "atempo=0.5",
+				path[:-3] + "wav",
+			)
 
-		except Exception as ExceptionData:
-			print(ExceptionData)
-			return False
+			subprocess.run(Command, check = True)
+			return True
 
-		return True
+		else:
+			
+			try:
+				Audio = AudioSegment.from_file(path, format = "ogg")
+				Audio = Audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
+				Audio.export(path[:-4] + ".wav", format = "wav")
+				os.remove(path)
+
+			except Exception as ExceptionData:
+				print(ExceptionData)
+				return False
+
+			return True
 	
 	def recognize_speech(self, path: PathLike) -> str | None:
 		"""

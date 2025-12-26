@@ -1,3 +1,6 @@
 [submodule "Source/TeleBotAdminPanel"]
 	path = Source/TeleBotAdminPanel
 	url = https://github.com/DUB1401/TeleBotAdminPanel
+[submodule "Source/NeuroHub"]
+	path = Source/NeuroHub
+	url = https://github.com/DUB1401/NeuroHub

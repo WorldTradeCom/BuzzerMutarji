@@ -3,4 +3,5 @@ __pycache__
 .venv
 # Bot's data.
 .telecache.json
+.tbap
 Data
