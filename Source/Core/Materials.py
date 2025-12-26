@@ -40,17 +40,17 @@ class MaterialsValidator:
 
 		return all((self.__IsFileFilled(path), os.path.exists(path)))
 
-	def __IsFileFilled(self, path: PathLike) -> bool:
+	def __IsFileFilled(self, path: PathLike) -> bool | None:
 		"""
 		Проверяет, заполнен ли файл контентом.
 
 		:param path: Путь к файлу.
 		:type path: PathLike
-		:return: Состояние: заполнен ли файл контентом.
-		:rtype: bool
+		:return: Состояние: заполнен ли файл контентом. `None` в случае отсутствия файла.
+		:rtype: bool | None
 		"""
 
-		if not os.path.exists(path): return False
+		if not os.path.exists(path): return
 		File = Path(path)
 		IsFileFilled = None
 
@@ -159,6 +159,8 @@ class MaterialsValidator:
 		if stdout: print("=== FILLED ===")
 		for Category in self.__Materials: Status = all((self.is_files_filled(Category, stdout), Status))
 
+		return Status
+
 	def print_materials(self):
 		"""Выводит список требуемых материалов."""
 
@@ -167,4 +169,6 @@ class MaterialsValidator:
 
 			for Filename in self.__Materials[Category]:
 				CurrentPath = f"Data/Materials/{Category}/{Filename}"
-				print(" > " + FastStyler(CurrentPath).colorize.green if self.__CheckFile(CurrentPath) else Filename)
+				print(" > ", end = "")
+				if self.__CheckFile(CurrentPath): print(FastStyler(CurrentPath).colorize.green)
+				else: print(FastStyler(CurrentPath).colorize.red)
