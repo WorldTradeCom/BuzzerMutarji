@@ -29,6 +29,12 @@ class UserProperties:
 		"""ID пригласившего пользователя."""
 
 		return self.__User.get_property("invited_by")
+	
+	@property
+	def invited_users(self) -> tuple[int]:
+		"""Последовательность ID приглашённых пользователей."""
+
+		return tuple(self.__User.get_property("invited_users"))
 
 	@property
 	def translation_mode(self) -> TranslationModes:

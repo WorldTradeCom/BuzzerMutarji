@@ -2,7 +2,7 @@ from Source.UI.Keyboards import InlineKeyboards, ReplyKeyboards
 from Source.Core.Translator import TranslationModes, Translator
 from Source.Core.Materials import MaterialsValidator
 from Source.TeleBotAdminPanel import Panel, Modules
-from Source.TeleBotAdminPanel import Panel
+from Source.UI.DebugSender import DebugSender
 from Source.Core.Speecher import Speecher
 from Source.UI.CLI import COMMANDS
 from Source import Functions
@@ -135,6 +135,11 @@ def Command(Message: types.Message):
 	else:
 		Keyboard = AdminPanel.open(User)
 		Bot.send_message(User.id, "Панель управления открыта.", reply_markup = Keyboard)
+
+@Bot.message_handler(commands = ["debug"])
+def Command(Message: types.Message):
+	User = UsersManagerObject.auth(Message.from_user)
+	DebugSender(Bot, User).send()
 
 @Bot.message_handler(commands = ["start"])
 def Command(Message: types.Message):

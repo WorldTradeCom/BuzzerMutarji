@@ -1,6 +1,6 @@
-from Source.Core.Translator import TranslationModes, Translator
 from Source.Core.UserProperties import UserProperties
 from Source.UI.Keyboards import InlineKeyboards
+from Source.Core.Translator import Translator
 
 from dublib.TelebotUtils import TeleCache, TeleMaster, UserData, UsersManager
 from dublib.Methods.Filesystem import ReadTextFile
