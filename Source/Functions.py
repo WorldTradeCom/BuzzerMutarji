@@ -282,11 +282,10 @@ def TranslateText(bot: TeleBot, user: UserData, translator: "Translator", text: 
 	user.add_flags(FLAG)
 
 	try:
-		sleep(10)
-		Result = translator.translate(mode = TranslationModes(user.get_property("mode")), text = text)
+		Properties = UserProperties(user)
+		Result = translator.translate(mode = Properties.translation_mode, text = text)
 
 		if Result:
-			Properties = UserProperties(user)
 			Properties.subtract_point()
 			bot.send_message(chat_id = user.id, text = Result.value)
 			
