@@ -17,6 +17,7 @@ from dublib.Methods.Data import Zerotify
 import shutil
 import os
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from badwords import ProfanityFilter
 from telebot import types
 import telebot
@@ -101,6 +102,9 @@ ProfanityFilterObject = ProfanityFilter()
 ProfanityFilterObject.init(("ru", "en"))
 AdminPanel = Panel(Bot, UsersManagerObject, Settings["password"])
 SpeecherObject = Speecher(Settings["vosk_model"])
+Scheduler = BackgroundScheduler()
+Scheduler.add_job(UsersManagerObject.set_property, args = ("daily_points", 3), trigger = "cron", hour = "0", minute = "0")
+Scheduler.start()
 
 #==========================================================================================#
 # >>>>> ИНИЦИАЛИЗАЦИЯ ПАНЕЛИ УПРАВЛЕНИЯ <<<<< #

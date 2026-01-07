@@ -12,6 +12,10 @@ from time import sleep
 from telebot import TeleBot, types
 import requests
 
+#==========================================================================================#
+# >>>>> UI ФУНКЦИИ <<<<< #
+#==========================================================================================#
+
 def AnswerToObscene(bot: TeleBot, user: UserData):
 	"""
 	Отправляет ответ на нецензурные выражения.
@@ -163,25 +167,6 @@ def CheckSubscription(master: TeleMaster, cacher: TeleCache, user: UserData, sub
 		
 	return Status
 
-def DownloadFile(url: str, path: PathLike) -> bool:
-	"""
-	Скачивает файл по ссылке.
-
-	:param url: Ссылка на файл.
-	:type url: str
-	:param path: Путь к файлу.
-	:type path: PathLike
-	:return: Возвращает `True`, если файл успешно скачан.
-	:rtype: bool
-	"""
-
-	try:
-		Response = requests.get(url)
-		with open(path, "wb") as FileWriter: FileWriter.write(Response.content)
-		return True
-	
-	except: return False
-
 def ProcessReferalLink(bot: TeleBot, users_manager: UsersManager, user: UserData, message: str) -> bool:
 	"""
 	Обрабатывает переход по реферальной ссылке.
@@ -298,3 +283,26 @@ def TranslateText(bot: TeleBot, user: UserData, translator: "Translator", text: 
 	except Exception as ExceptionData: print(ExceptionData)
 
 	user.remove_flags(FLAG)
+
+#==========================================================================================#
+# >>>>> ДРУГИЕ ФУНКЦИИ <<<<< #
+#==========================================================================================#
+
+def DownloadFile(url: str, path: PathLike) -> bool:
+	"""
+	Скачивает файл по ссылке.
+
+	:param url: Ссылка на файл.
+	:type url: str
+	:param path: Путь к файлу.
+	:type path: PathLike
+	:return: Возвращает `True`, если файл успешно скачан.
+	:rtype: bool
+	"""
+
+	try:
+		Response = requests.get(url)
+		with open(path, "wb") as FileWriter: FileWriter.write(Response.content)
+		return True
+	
+	except: return False
