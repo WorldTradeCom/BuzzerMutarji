@@ -93,6 +93,7 @@ if CommandData and CommandData.name:
 Bot = telebot.TeleBot(Settings["bot_token"])
 Master = TeleMaster(Bot)
 UsersManagerObject = UsersManager("Data/Users")
+UsersManagerObject.remove_flags("in-generation")
 Cacher = TeleCache()
 Cacher.set_bot(Bot)
 Cacher.set_chat_id(Settings["cache_chat_id"])

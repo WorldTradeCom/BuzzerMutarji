@@ -273,14 +273,29 @@ def TranslateText(bot: TeleBot, user: UserData, translator: "Translator", text: 
 	:type text: str
 	"""
 
-	Result = translator.translate(mode = TranslationModes(user.get_property("mode")), text = text)
+	FLAG = "in-generation"
 
-	if Result:
-		Properties = UserProperties(user)
-		Properties.subtract_point()
+	if user.check_flags(FLAG):
+		bot.send_message(chat_id = user.id, text = "Вы уже выполняете перевод. Подождите завершения текущей операции.")
+		return
+	
+	user.add_flags(FLAG)
 
-	else:
-		bot.send_message(
-			chat_id = user.id,
-			text = "Ууупс… Не удалось выполнить перевод."
-		)
+	try:
+		sleep(10)
+		Result = translator.translate(mode = TranslationModes(user.get_property("mode")), text = text)
+
+		if Result:
+			Properties = UserProperties(user)
+			Properties.subtract_point()
+			bot.send_message(chat_id = user.id, text = Result.value)
+			
+		else:
+			bot.send_message(
+				chat_id = user.id,
+				text = "Ууупс… Не удалось выполнить перевод."
+			)
+
+	except Exception as ExceptionData: print(ExceptionData)
+
+	user.remove_flags(FLAG)

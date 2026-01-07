@@ -2,6 +2,7 @@ from .Structs import NeuroHubOptions, TranslationModes
 
 from Source.NeuroHub.Connection.API import Options, Requestor
 
+from dublib.CLI.Templates.Bus import PrintError
 from dublib.Engine.Bus import ExecutionStatus
 
 from typing import Literal
@@ -84,6 +85,12 @@ class Translator:
 
 		Status = ExecutionStatus()
 		Status.code = Response.status_code
-		if Response.json: Status.value = Response.json.get("text")
+		
+		if Response.json:
+			Status.value = Response.json.get("text")
+
+			if not Status: 
+				PrintError("Generation failed with response JSON:")
+				print(Response.json)
 
 		return Status
