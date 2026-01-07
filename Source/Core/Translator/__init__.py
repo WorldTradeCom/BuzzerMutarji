@@ -1,31 +1,10 @@
+from .Structs import NeuroHubOptions, TranslationModes
+
 from Source.NeuroHub.Connection.API import Options, Requestor
 
 from dublib.Engine.Bus import ExecutionStatus
 
-from dataclasses import dataclass
 from typing import Literal
-import enum
-
-#==========================================================================================#
-# >>>>> ДОПОЛНИТЕЛЬНЫЕ СТРУКТУРЫ ДАННЫХ <<<<< #
-#==========================================================================================#
-
-@dataclass
-class NeuroHubOptions:
-	port: int
-	source: Literal["g4f", "gemini"]
-	model: str
-	force_proxy: bool
-
-class TranslationModes(enum.Enum):
-	"""Направленности перевода русского на зумерский."""
-
-	From = "from"
-	To = "to"
-
-#==========================================================================================#
-# >>>>> ОСНОВНОЙ КЛАСС <<<<< #
-#==========================================================================================#
 
 class Translator:
 	"""Русско-зумерский переводчик."""

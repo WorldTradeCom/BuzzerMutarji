@@ -12,6 +12,7 @@ from dublib.Methods.System import CheckPythonMinimalVersion, Clear
 from dublib.Methods.Filesystem import MakeRootDirectories
 from dublib.CLI.Terminalyzer import Terminalyzer
 from dublib.Engine.Configurator import Config
+from dublib.Methods.Data import Zerotify
 
 import shutil
 import os
@@ -96,7 +97,7 @@ Cacher = TeleCache()
 Cacher.set_bot(Bot)
 Cacher.set_chat_id(Settings["cache_chat_id"])
 ProfanityFilterObject = ProfanityFilter()
-ProfanityFilterObject.init(["ru", "en"])
+ProfanityFilterObject.init(("ru", "en"))
 AdminPanel = Panel(Bot, UsersManagerObject, Settings["password"])
 SpeecherObject = Speecher(Settings["vosk_model"])
 
@@ -120,12 +121,28 @@ AdminPanel.set_tree(TBAP_TREE)
 @Bot.message_handler(commands = ["admin"])
 def Command(Message: types.Message):
 	User = UsersManagerObject.auth(Message.from_user)
-	AdminPanel.open(User, "Панель управления открыта.")
+	Password = Message.text.split(" ")[1:]
+	Password = " ".join(Password).strip()
+
+	if not AdminPanel.login(User, Zerotify(Password)):
+		Bot.send_message(User.id, "Доступ запрещён.")
+
+	else:
+		Keyboard = AdminPanel.open(User)
+		Bot.send_message(User.id, "Панель управления открыта.", reply_markup = Keyboard)
 
 @Bot.message_handler(commands = ["start"])
 def Command(Message: types.Message):
 	User = UsersManagerObject.auth(Message.from_user)
+	if not User.has_property("invited_by"): Functions.ProcessReferalLink(Bot, UsersManagerObject, User, Message.text)
+
+	User.suppress_saving(True)
 	User.set_property("mode", "to", force = False)
+	User.set_property("daily_points", 3, force = False)
+	User.set_property("bonus_points", 0, force = False)
+	User.set_property("invited_by", None, force = False)
+	User.set_property("invited_users", list(), force = False)
+	User.suppress_saving(False, save = True)
 
 	Caption = (
 		"Хай, бро!" + " 👋",
@@ -173,6 +190,8 @@ def Text(Message: types.Message):
 		#---> Перевод.
 		#==========================================================================================#
 		case _:
+			if Functions.CheckPointsLimit(Bot, User): return
+			if Functions.CheckMessageLength(Bot, User, Message.text): return
 			Bot.send_chat_action(User.id, "typing")
 			Functions.TranslateText(Bot, User, TranslatorObject, Message.text)
 
