@@ -34,7 +34,6 @@ Directories = (
 	"Data/Materials/Text",
 )
 
-Clear()
 CheckPythonMinimalVersion(3, 10)
 MakeRootDirectories(Directories)
 
@@ -63,11 +62,15 @@ if CommandData and CommandData.name:
 
 	match CommandData.name:
 
+		case "help": exit(0)
+
 		case "materials": 
+			Clear()
 			MaterialsValidator().print_materials()
 			Cased = True
 
-		case "validate": 
+		case "validate":
+			Clear()
 			MaterialsValidator().validate()
 			Cased = True
 
@@ -91,6 +94,7 @@ if CommandData and CommandData.name:
 # >>>>> ИНИЦИАЛИЗАЦИЯ ОБЪЕКТОВ <<<<< #
 #==========================================================================================#
 
+Clear()
 Bot = telebot.TeleBot(Settings["bot_token"])
 Master = TeleMaster(Bot)
 UsersManagerObject = UsersManager("Data/Users")
