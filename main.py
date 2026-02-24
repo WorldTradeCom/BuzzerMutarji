@@ -62,21 +62,19 @@ if CommandData and CommandData.name:
 
 	match CommandData.name:
 
-		case "help": exit(0)
+		case "help": pass
 
 		case "materials": 
 			Clear()
 			MaterialsValidator().print_materials()
-			Cased = True
 
 		case "validate":
 			Clear()
 			MaterialsValidator().validate()
-			Cased = True
 
 		case "translate":
 			Mode = TranslationModes.From if CommandData.check_key("from") else TranslationModes.To
-			Result = TranslatorObject.translate(Mode, CommandData.arguments[0])
+			Result = TranslatorObject.translate(Mode, CommandData.arguments[0], CommandData.get_key_value("additional"))
 			Result = {
 				"code": Result.code,
 				"text": Result.value,

@@ -12,6 +12,7 @@ ComPos = Com.create_position("MODE", "Режим перевода.", important =
 ComPos.add_flag("from", "С зумерского на нормальный.")
 ComPos.add_flag("to", "С нормального на зумерский.")
 Com.base.add_flag("json", "Prints result as JSON string.")
+Com.base.add_key("additional", description = "Add additional line to generation request.")
 COMMANDS.append(Com)
 
 Com = Command("validate", "Проводит проверку наличия материалов.")

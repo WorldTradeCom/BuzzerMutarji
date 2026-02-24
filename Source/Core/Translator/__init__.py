@@ -14,23 +14,26 @@ class Translator:
 	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	def __GetRequest(self, mode: TranslationModes) -> str:
+	def __GetRequest(self, mode: TranslationModes, additional: str | None = None) -> str:
 		"""
 		Возвращает текст запроса к нейросети в зависимости от режима перевода.
 
 		:param mode: Режим перевода.
 		:type mode: TranslationModes
+		:param additional: Дополнительная строка запроса.
+		:type additional: str | None
 		:return: Текст запроса.
 		:rtype: str
 		"""
 
 		Request = [
-			"Сохрани оригинальное форматирование, эмодзи и абзацы, если они есть, а также адаптируй и пдставь HTML как в оригинале. Нe используй Markdown!",
-			"Не добавляй ничего от себя!"
+			"Сохрани оригинальное форматирование, эмодзи и абзацы, если они есть, а также адаптируй и подставь HTML как в оригинале.",
+			"Нe используй Markdown! Не добавляй ничего от себя!"
 		]
+		if additional: Request.append(additional)
 
 		match mode:
-			case TranslationModes.To: return " ".join(["Переведи следующий текст на русский зумерский язык."] + Request)
+			case TranslationModes.To: return " ".join(["Переведи следующий текст на зумерский язык."] + Request)
 			case TranslationModes.From: return " ".join(["Переведи следующий текст с зумерского на литературный русский."] + Request)
 
 	#==========================================================================================#
@@ -58,7 +61,7 @@ class Translator:
 
 		self.__NeuroHubOptions = NeuroHubOptions(port, source, model, force_proxy)
 
-	def translate(self, mode: TranslationModes, text: str) -> ExecutionStatus:
+	def translate(self, mode: TranslationModes, text: str, additional: str | None = None) -> ExecutionStatus:
 		"""
 		Переводит текст в выбранном режиме.
 
@@ -66,6 +69,8 @@ class Translator:
 		:type mode: TranslationModes
 		:param text: Текст для перевода.
 		:type text: str
+		:param additional: Дополнительная строка запроса.
+		:type additional: str | None
 		:return: Контейнер результата.
 		:rtype: ExecutionStatus
 		"""
@@ -75,7 +80,7 @@ class Translator:
 		Settings.set_model(self.__NeuroHubOptions.model)
 		Settings.set_force_proxy(self.__NeuroHubOptions.force_proxy)
 		Master = Requestor(Settings, port = self.__NeuroHubOptions.port)
-		Response = Master.generate(self.__GetRequest(mode) + "\n" + text)
+		Response = Master.generate(self.__GetRequest(mode, additional) + "\n" + text)
 
 		Status = ExecutionStatus()
 		Status.code = Response.status_code
