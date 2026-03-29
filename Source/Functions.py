@@ -118,7 +118,7 @@ def CheckPointsLimit(bot: TeleBot, user: UserData) -> bool:
 	Properties = UserProperties(user)
 
 	if not Properties.is_points_available():
-		ReferalLink = "https://t.me/" + bot.get_me().username + f"?start={user.id}"
+		ReferalLink = Properties.get_referral_link(bot.get_me().username)
 		Text = (
 			"Лимит перевода для вас на сегодня исчерпан. Вы можете делать по 3 перевода в день. Чтобы увеличить лимит переводов, пригласите, пожалуйста, друга.",
 			"Вот ваша ссылка приглашение поделитесь ею:" + f" <code>{ReferalLink}</code>"
@@ -147,6 +147,11 @@ def CheckSubscription(master: TeleMaster, cacher: TeleCache, user: UserData, sub
 	"""
 
 	Status = ExecutionStatus()
+
+	if not subscriptions:
+		Status.value = True
+		return Status
+	
 	Status.value = master.check_user_subscriptions(user, tuple(subscriptions[Key]["id"] for Key in subscriptions.keys()))
 	Status["sended"] = False
 
@@ -164,6 +169,12 @@ def CheckSubscription(master: TeleMaster, cacher: TeleCache, user: UserData, sub
 			reply_markup = InlineKeyboards.Subscribe(subscriptions)
 		)
 		Status["sended"] = True
+
+	elif Status.value == None:
+		master.bot.send_message(
+			chat_id = user.id,
+			text = "Не удалось проверить состояние подписки. Повторите попытку или свяжитесь с технической поддержкой.",
+		)
 		
 	return Status
 
@@ -189,18 +200,7 @@ def ProcessReferalLink(bot: TeleBot, users_manager: UsersManager, user: UserData
 
 	if users_manager.is_user_exists(InviterID):
 		user.set_property("invited_by", InviterID)
-		Inviter = users_manager.get_user(InviterID)
-		InviterProperties = UserProperties(Inviter)
-		Inviter.suppress_saving(True)
-		InviterProperties.add_invited_user(user.id)
-		InviterProperties.add_bonus_points(5)
-		Inviter.suppress_saving(False, save = True)
-
-		bot.send_message(
-			chat_id = InviterID,
-			text = "От вас пришел кореш! С нас 5 бонусных переводов!",
-			reply_markup = InlineKeyboards.Delete("Вот это ништяк!")
-		)
+		user.add_flags("invation_unnotificated")
 
 def SendModeSwitcher(bot: TeleBot, user: UserData):
 	"""
@@ -244,6 +244,26 @@ def SendShareMessage(bot: TeleBot, cacher: TeleCache, user: UserData):
 		caption = "\n".join(Text),
 		parse_mode = "HTML",
 		reply_markup = InlineKeyboards.Share(Username)
+	)
+
+def SendReferralNotification(bot: TeleBot, users_manager: UsersManager, user: UserData):
+
+	if not user.check_flags("invation_unnotificated"): return
+
+	user.remove_flags("invation_unnotificated")
+	User = UserProperties(user)
+	Inviter = users_manager.get_user(User.invited_by)
+	InviterProperties = UserProperties(Inviter)
+
+	Inviter.suppress_saving(True)
+	InviterProperties.add_invited_user(user.id)
+	InviterProperties.add_bonus_points(5)
+	Inviter.suppress_saving(False)
+
+	bot.send_message(
+		chat_id = Inviter.id,
+		text = "От вас пришел кореш! С нас 5 бонусных переводов!",
+		reply_markup = InlineKeyboards.Delete("Вот это ништяк!")
 	)
 
 def TranslateText(bot: TeleBot, user: UserData, translator: "Translator", text: str):

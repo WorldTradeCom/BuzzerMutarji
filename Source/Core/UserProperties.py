@@ -77,6 +77,18 @@ class UserProperties:
 
 		self.__User.set_property("bonus_points", self.bonus_points + points)
 
+	def get_referral_link(self, bot_username: str) -> str:
+		"""
+		Возвращает реферальную ссылку пользователя.
+
+		:param bot_username: Никнейм бота.
+		:type bot_username: str
+		:return: Реферальная ссылка.
+		:rtype: str
+		"""
+
+		return f"https://t.me/{bot_username}?start={self.__User.id}"
+
 	def is_points_available(self) -> bool:
 		"""
 		Проверяет, есть ли у пользователя хотя бы одно очко.

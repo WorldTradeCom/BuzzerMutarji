@@ -1,6 +1,5 @@
 -r Source/TeleBotAdminPanel/requirements.txt
-git+https://github.com/FlacSy/badwords
-pyTelegramBotAPI
-dublib==0.24.1
+badwords-py
+dublib[telebot]==0.25.1
 pydub
 vosk

@@ -33,7 +33,7 @@ class Translator:
 		if additional: Request.append(additional)
 
 		match mode:
-			case TranslationModes.To: return " ".join(["Переведи следующий текст на зумерский язык."] + Request)
+			case TranslationModes.To: return " ".join(["Переведи следующий текст на зумерский русский язык."] + Request)
 			case TranslationModes.From: return " ".join(["Переведи следующий текст с зумерского на литературный русский."] + Request)
 
 	#==========================================================================================#

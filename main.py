@@ -116,6 +116,7 @@ AdminPanel = Panel(Bot, UsersManagerObject, Settings["password"])
 
 TBAP_TREE = {
 	"📊 Статистика": Modules.SM_Statistics,
+	"✉️ Рассылка": Modules.SM_Mailing,
 	"❌ Закрыть": Modules.SM_Close
 }
 
@@ -154,7 +155,7 @@ def Command(Message: types.Message):
 	User.set_property("bonus_points", 0, force = False)
 	User.set_property("invited_by", None, force = False)
 	User.set_property("invited_users", list(), force = False)
-	User.suppress_saving(False, save = True)
+	User.suppress_saving(False)
 
 	Caption = (
 		"Хай, бро!" + " 👋",
@@ -181,7 +182,7 @@ def Command(Message: types.Message):
 def Text(Message: types.Message):
 	User = UsersManagerObject.auth(Message.from_user)
 	if AdminPanel.procedures.text(Message): return
-	Functions.CheckSubscription(Master, Cacher, User, Settings["subscriptions"])
+	if not Functions.CheckSubscription(Master, Cacher, User, Settings["subscriptions"]): return
 
 	#---> Проверка чёрного списка и нецензурной лексики.
 	#==========================================================================================#
@@ -206,6 +207,7 @@ def Text(Message: types.Message):
 			if Functions.CheckMessageLength(Bot, User, Message.text): return
 			Bot.send_chat_action(User.id, "typing")
 			Functions.TranslateText(Bot, User, TranslatorObject, Message.text)
+			if User.check_flags("invation_unnotificated"): Functions.SendReferralNotification(Bot, UsersManagerObject, User)
 
 #==========================================================================================#
 # >>>>> ОБРАБОТКА INLINE-КНОПОК <<<<< #
