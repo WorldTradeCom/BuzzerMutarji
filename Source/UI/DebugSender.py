@@ -1,6 +1,6 @@
 from Source.Core.UserProperties import UserProperties
 
-from typing import TYPE_CHECKING
+from typing import Any, Iterable, TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from dublib.TelebotUtils.Users import UserData
@@ -47,6 +47,26 @@ class DebugSender:
 		
 		return f"{label}: {value}"
 	
+	def __FormatSequence(self, label: str, sequence: Iterable[Any]) -> str:
+		"""
+		Форматирует последовательность для отправки.
+
+		:param label: Надпись-идентификатор.
+		:type label: str
+		:param sequence: Последовательность.
+		:type sequence: Iterable[Any]
+		:return: Строка сообщения.
+		:rtype: str
+		"""
+
+		Elements = "<i>null</i>"
+
+		if sequence:
+			Elements = tuple(str(Value) for Value in sequence)
+			Elements = ", ".join(Elements)
+
+		return f"{label}: {Elements}"
+
 	def __FormatStr(self, label: str, value: str) -> str:
 		"""
 		Форматирует строковое значение для отправки.
@@ -87,7 +107,8 @@ class DebugSender:
 
 
 		Text = (
-			"<b>" + "Данные отладки" + "</b>\n",
+			"<b>" + "Данные отладки" + "</b>",
+			f"Ваш ID: <code>{self.__User.id}</code>\n",
 			self.__FormatInt("Ежедневные очки", self.__Properties.daily_points),
 			self.__FormatInt("Бонусные очки", self.__Properties.bonus_points),
 			"",
@@ -95,7 +116,7 @@ class DebugSender:
 			self.__FormatStr("Режим", self.__Properties.translation_mode.value),
 			"",
 			self.__FormatInt("Приглашён", self.__Properties.invited_by),
-			self.__FormatInt("Пригласил", str(len(self.__Properties.invited_users)))
+			self.__FormatSequence("Пригласил", self.__Properties.invited_users)
 		)
 
 		self.__Bot.send_message(
